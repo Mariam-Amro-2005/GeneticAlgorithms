@@ -9,7 +9,7 @@ import genetic.replacement.*;
 import java.util.*;
 
 /**
- * Reusable Genetic Algorithm Engine.
+ * Reusable Genetic Algorithm Engine with a Builder pattern.
  * Handles the evolution loop using pluggable strategies and representations.
  */
 public class GeneticAlgorithmEngine {
@@ -22,18 +22,14 @@ public class GeneticAlgorithmEngine {
 
     private Population population;
 
-    public GeneticAlgorithmEngine(GAParameters params,
-                                  FitnessFunction fitnessFunction,
-                                  SelectionStrategy selection,
-                                  CrossoverStrategy crossover,
-                                  MutationStrategy mutation,
-                                  ReplacementStrategy replacement) {
-        this.params = params;
-        this.fitnessFunction = fitnessFunction;
-        this.selection = selection;
-        this.crossover = crossover;
-        this.mutation = mutation;
-        this.replacement = replacement;
+    /** Private constructor — only accessible via the Builder */
+    private GeneticAlgorithmEngine(Builder builder) {
+        this.params = builder.params;
+        this.fitnessFunction = builder.fitnessFunction;
+        this.selection = builder.selection;
+        this.crossover = builder.crossover;
+        this.mutation = builder.mutation;
+        this.replacement = builder.replacement;
     }
 
     /** Initializes the population and evaluates initial fitness. */
@@ -41,13 +37,12 @@ public class GeneticAlgorithmEngine {
         population = new Population();
         for (int i = 0; i < params.getPopulationSize(); i++) {
             Chromosome c = new Chromosome(params.getRepresentationType(), params.getChromosomeLength());
-            double fitness = fitnessFunction.evaluate(c);
-            c.setFitness(fitness);
+            c.setFitness(fitnessFunction.evaluate(c));
             population.addChromosome(c);
         }
     }
 
-    /** Evaluates fitness for all chromosomes in the population. */
+    /** Evaluates fitness for all chromosomes in the given population. */
     private void evaluatePopulation(Population pop) {
         for (Chromosome c : pop.getIndividuals()) {
             double fitness = fitnessFunction.evaluate(c);
@@ -55,42 +50,38 @@ public class GeneticAlgorithmEngine {
         }
     }
 
+    /** Executes a single generation of evolution. */
+    private void evolveOneGeneration(int generation) {
+        List<Chromosome> offspringList = new ArrayList<>();
+
+        while (offspringList.size() < params.getPopulationSize()) {
+            Chromosome parent1 = selection.selectParent(population);
+            Chromosome parent2 = selection.selectParent(population);
+
+            Chromosome[] children = crossover.crossover(parent1, parent2);
+            mutation.mutate(children[0]);
+            mutation.mutate(children[1]);
+
+            offspringList.add(children[0]);
+            if (offspringList.size() < params.getPopulationSize())
+                offspringList.add(children[1]);
+        }
+
+        Population offspringPop = new Population(offspringList);
+        evaluatePopulation(offspringPop);
+
+        population = replacement.replace(population, offspringPop);
+
+        Chromosome best = population.getBest();
+        System.out.printf("Generation %d | Best Fitness: %.4f%n", generation, best.getFitness());
+    }
+
     /** Runs the GA evolution loop. */
     public void run() {
         initializePopulation();
 
         for (int generation = 1; generation <= params.getGenerations(); generation++) {
-            List<Chromosome> offspringList = new ArrayList<>();
-
-            // Generate offspring via selection, crossover, and mutation
-            while (offspringList.size() < params.getPopulationSize()) {
-                Chromosome parent1 = selection.selectParent(population);
-                Chromosome parent2 = selection.selectParent(population);
-
-                Chromosome[] children = crossover.crossover(parent1, parent2);
-
-                mutation.mutate(children[0]);
-                mutation.mutate(children[1]);
-
-                offspringList.add(children[0]);
-                if (offspringList.size() < params.getPopulationSize())
-                    offspringList.add(children[1]);
-            }
-
-            // Evaluate fitness of offspring
-            Population offspringPop = new Population();
-            for (Chromosome c : offspringList) {
-                double fitness = fitnessFunction.evaluate(c);
-                c.setFitness(fitness);
-                offspringPop.addChromosome(c);
-            }
-
-            // Apply replacement strategy
-            population = replacement.replace(population, offspringPop);
-
-            // Track and print best individual
-            Chromosome best = population.getBest();
-            System.out.printf("Generation %d | Best Fitness: %.4f%n", generation, best.getFitness());
+            evolveOneGeneration(generation);
         }
 
         Chromosome finalBest = population.getBest();
@@ -98,7 +89,59 @@ public class GeneticAlgorithmEngine {
         System.out.println("Best Solution: " + finalBest);
     }
 
+    /** Returns the best chromosome in the final population. */
     public Chromosome getBestSolution() {
         return population.getBest();
+    }
+
+    // ---------------------------------------------------------
+    // ✅ BUILDER CLASS
+    // ---------------------------------------------------------
+    public static class Builder {
+        private final GAParameters params;
+        private final FitnessFunction fitnessFunction;
+        private SelectionStrategy selection;
+        private CrossoverStrategy crossover;
+        private MutationStrategy mutation;
+        private ReplacementStrategy replacement;
+
+        public Builder(GAParameters params, FitnessFunction fitnessFunction) {
+            this.params = Objects.requireNonNull(params, "GAParameters cannot be null");
+            this.fitnessFunction = Objects.requireNonNull(fitnessFunction, "FitnessFunction cannot be null");
+        }
+
+        public Builder withSelection(SelectionStrategy selection) {
+            this.selection = selection;
+            return this;
+        }
+
+        public Builder withCrossover(CrossoverStrategy crossover) {
+            this.crossover = crossover;
+            return this;
+        }
+
+        public Builder withMutation(MutationStrategy mutation) {
+            this.mutation = mutation;
+            return this;
+        }
+
+        public Builder withReplacement(ReplacementStrategy replacement) {
+            this.replacement = replacement;
+            return this;
+        }
+
+        /** Builds the engine, injecting defaults where needed. */
+        public GeneticAlgorithmEngine build() {
+            if (selection == null)
+                selection = OperatorFactory.createSelection("tournament");
+            if (crossover == null)
+                crossover = OperatorFactory.createCrossover("order", params);
+            if (mutation == null)
+                mutation = OperatorFactory.createMutation("swap", params);
+            if (replacement == null)
+                replacement = OperatorFactory.createReplacement("steady");
+
+            return new GeneticAlgorithmEngine(this);
+        }
     }
 }

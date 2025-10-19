@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== GA Library Demo: CPU Scheduling ===");
 
-        // Step 1: Create parameters
+        // Step 1: Configure parameters
         GAParameters params = new GAParameters();
         params.setPopulationSize(20);
         params.setGenerations(100);
@@ -20,20 +20,30 @@ public class Main {
         params.setMutationRate(0.05);
         params.setRepresentationType("Integer");
 
-        // Step 2: Set fitness function (case study)
+        // Step 2: Define fitness function (case study)
         FitnessFunction fitnessFunction = new CPUJobScheduling();
 
-        // Step 3: Dynamically create operators using the factory and params
-        SelectionStrategy selection = OperatorFactory.createSelection("tournament");
-        CrossoverStrategy crossover = OperatorFactory.createCrossover("npoint", params);
-        MutationStrategy mutation = OperatorFactory.createMutation("swap", params);
-        ReplacementStrategy replacement = OperatorFactory.createReplacement("steady");
+        // --- Option A: Minimal setup (defaults) ---
+        GeneticAlgorithmEngine gaDefault = new GeneticAlgorithmEngine.Builder(params, fitnessFunction)
+                .build();
 
-        // Step 4: Plug everything into the engine
-        GeneticAlgorithmEngine ga = new GeneticAlgorithmEngine(
-                params, fitnessFunction, selection, crossover, mutation, replacement
-        );
+        gaDefault.run();
 
-        ga.run();
+        // --- Option B: Advanced setup (custom operators) ---
+        /*
+        SelectionStrategy selection = new TournamentSelection();
+        CrossoverStrategy crossover = new NPointCrossover(2, params.getCrossoverRate());
+        MutationStrategy mutation = new SwapMutation(params.getMutationRate());
+        ReplacementStrategy replacement = new SteadyStateReplacement();
+
+        GeneticAlgorithmEngine gaCustom = new GeneticAlgorithmEngine.Builder(params, fitnessFunction)
+                .withSelection(selection)
+                .withCrossover(crossover)
+                .withMutation(mutation)
+                .withReplacement(replacement)
+                .build();
+
+        gaCustom.run();
+        */
     }
 }

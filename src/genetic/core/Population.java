@@ -3,10 +3,16 @@ package genetic.core;
 import java.util.*;
 
 public class Population {
-    private final List<Chromosome> individuals;
+    private List<Chromosome> individuals = List.of();
 
     public Population() {
         this.individuals = new ArrayList<>();
+    }
+
+    public Population(List<Chromosome> offspringList) {
+        for (Chromosome c : offspringList) {
+            this.individuals.add(c.copy());
+        }
     }
 
     public void addChromosome(Chromosome chromosome) {
