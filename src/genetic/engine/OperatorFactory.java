@@ -5,9 +5,7 @@ import genetic.operators.crossover.*;
 import genetic.operators.mutation.*;
 import genetic.replacement.*;
 
-import java.util.Random;
-
-public class OperatorFactory {  // TODO: set operator variables instead of random numbers
+public class OperatorFactory {
 
     public static SelectionStrategy createSelection(String name) {
         return switch (name.toLowerCase()) {
@@ -17,20 +15,24 @@ public class OperatorFactory {  // TODO: set operator variables instead of rando
         };
     }
 
-    public static CrossoverStrategy createCrossover(String name) {
+    public static CrossoverStrategy createCrossover(String name, GAParameters params) {
+        double rate = params.getCrossoverRate();
+
         return switch (name.toLowerCase()) {
             case "order" -> new OrderCrossover();
-            case "npoint" -> new NPointCrossover(new Random().nextInt(), new Random().nextDouble());
-            case "uniform" -> new UniformCrossover(new Random().nextDouble());
+            case "npoint" -> new NPointCrossover(2, rate); // 2-point crossover example
+            case "uniform" -> new UniformCrossover(rate);
             default -> throw new IllegalArgumentException("Unknown crossover method: " + name);
         };
     }
 
-    public static MutationStrategy createMutation(String name) {
+    public static MutationStrategy createMutation(String name, GAParameters params) {
+        double rate = params.getMutationRate();
+
         return switch (name.toLowerCase()) {
-            case "swap" -> new SwapMutation(new Random().nextDouble());
-            case "bitflip" -> new BitFlipMutation(new Random().nextDouble());
-            case "floating" -> new FloatingPointMutation(new Random().nextDouble(), 10.0);
+            case "swap" -> new SwapMutation(rate);
+            case "bitflip" -> new BitFlipMutation(rate);
+            case "floating" -> new FloatingPointMutation(rate, 0.1);
             default -> throw new IllegalArgumentException("Unknown mutation method: " + name);
         };
     }

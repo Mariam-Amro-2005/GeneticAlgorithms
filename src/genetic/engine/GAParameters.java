@@ -1,12 +1,14 @@
 package genetic.engine;
 
+import genetic.core.RepresentationType;
+
 public class GAParameters {
     private int populationSize;
     private int generations;
     private int chromosomeLength;
     private double crossoverRate;
     private double mutationRate;
-    private String representationType;
+    private RepresentationType representationType;
 
     // Getters & setters
     public int getPopulationSize() { return populationSize; }
@@ -24,6 +26,6 @@ public class GAParameters {
     public double getMutationRate() { return mutationRate; }
     public void setMutationRate(double mutationRate) { this.mutationRate = mutationRate; }
 
-    public String getRepresentationType() { return representationType; }
-    public void setRepresentationType(String representationType) { this.representationType = representationType; }
+    public RepresentationType getRepresentationType() { return representationType; }
+    public void setRepresentationType(String representationType) { this.representationType = RepresentationType.valueOf(representationType); }
 }
