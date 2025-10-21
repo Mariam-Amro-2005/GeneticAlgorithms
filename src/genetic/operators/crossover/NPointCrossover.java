@@ -4,12 +4,13 @@ import genetic.core.*;
 import java.util.*;
 
 /**
- * Generic N-Point crossover operator for binary, integer, or floating-point chromosomes.
+ * Generic N-Point crossover operator for binary, integer, or floating-point
+ * chromosomes.
  * Works by selecting N crossover points and alternately swapping gene segments
  * between two parents.
  */
 public class NPointCrossover implements CrossoverStrategy {
-    private final int numPoints;       // e.g., 1 for single-point, 2 for two-point
+    private final int numPoints; // e.g., 1 for single-point, 2 for two-point
     private final double crossoverRate;
 
     public NPointCrossover(int numPoints, double crossoverRate) {
@@ -20,19 +21,29 @@ public class NPointCrossover implements CrossoverStrategy {
     @Override
     public Chromosome[] crossover(Chromosome parent1, Chromosome parent2) {
         Random random = new Random();
+
+        // check num of points
         int length = parent1.length();
+        if (numPoints < 1 || numPoints >= length) {
+            throw new IllegalArgumentException("Invalid number of crossover points: " + numPoints);
+        }
+        // check equal parent lengths
+        if (parent1.length() != parent2.length()) {
+            throw new IllegalArgumentException("Parent chromosomes must have the same length");
+        }
 
         // If crossover does not occur, return copies
         if (random.nextDouble() > crossoverRate)
-            return new Chromosome[]{parent1.copy(), parent2.copy()};
+            return new Chromosome[] { parent1.copy(), parent2.copy() };
 
         Chromosome child1 = parent1.copy();
         Chromosome child2 = parent2.copy();
 
         // Generate unique sorted crossover points
         TreeSet<Integer> points = new TreeSet<>();
+
         while (points.size() < numPoints)
-            points.add(random.nextInt(length - 1) + 1);  // between 1 and length-1
+            points.add(random.nextInt(length - 1) + 1); // between 1 and length-1
 
         List<Integer> crossoverPoints = new ArrayList<>(points);
         crossoverPoints.add(length); // ensures we process until end
@@ -52,6 +63,6 @@ public class NPointCrossover implements CrossoverStrategy {
             prev = point;
         }
 
-        return new Chromosome[]{child1, child2};
+        return new Chromosome[] { child1, child2 };
     }
 }
