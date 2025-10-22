@@ -116,7 +116,7 @@ public class GeneticAlgorithmEngine {
                 .average()
                 .orElse(0.0);
 
-        System.out.printf("Generation %d | Best: %.8f | Avg: %.8f%n", generation, best.getFitness(), avg);
+        System.out.printf("Generation %d | Best: %.5f | Avg: %.5f%n", generation, best.getFitness(), avg);
 //        System.out.printf("Generation %d | Best Fitness: %.4f%n", generation, best.getFitness());
     }
 
@@ -142,7 +142,7 @@ public class GeneticAlgorithmEngine {
             }
         }
 
-        if (!thresholdReached) {
+        if (!thresholdReached && params.getFitnessThreshold() != 1.0) {
             System.out.println("⚠️ Fitness threshold not reached within the allotted generations.");
         }
 

@@ -5,7 +5,6 @@ import genetic.core.Chromosome;
 import genetic.core.Gene;
 import genetic.engine.*;
 import genetic.operators.crossover.CrossoverStrategy;
-import genetic.operators.crossover.NPointCrossover;
 import genetic.operators.mutation.MutationStrategy;
 import genetic.operators.selection.SelectionStrategy;
 import genetic.replacement.ReplacementStrategy;
@@ -42,9 +41,9 @@ public class Main {
         // Step 1: Configure parameters (chromosome length must equal number of jobs)
         GAParameters params = new GAParameters.Builder()
                 .setPopulationSize(50)
-                .setGenerations(10)
+                .setGenerations(200)
                 .setChromosomeLength(jobs.size())
-                .setFitnessThreshold(0.0236)
+//                .setFitnessThreshold(0.0236)
                 .setCrossoverRate(0.9)
                 .setMutationRate(0.25)
                 .setRepresentationType("JOB")
@@ -56,7 +55,9 @@ public class Main {
 
         // Build and run GA with defaults
         GeneticAlgorithmEngine ga = new GeneticAlgorithmEngine.Builder(params, fitnessFunction).build();
-        Chromosome best = ga.run();
+//        GeneticAlgorithmEngine ga = buildEngineFromUserInput(fitnessFunction);
+        ga.run();
+        
 
     }
 
@@ -68,8 +69,8 @@ public class Main {
             List<Gene<?>> genes = shuffled.stream()
                     .map(JobGene::new)
                     .collect(Collectors.toList());
-            Chromosome chrom = new Chromosome(genetic.core.RepresentationType.JOB, genes);
-            pop.add(chrom);
+            Chromosome chromosome = new Chromosome(genetic.core.RepresentationType.JOB, genes);
+            pop.add(chromosome);
         }
         return pop;
     }
@@ -77,8 +78,6 @@ public class Main {
 
 
     private static GeneticAlgorithmEngine buildEngineFromUserInput(FitnessFunction fitnessFunction) {
-
-        System.out.println("=== GA Library Demo: CPU Scheduling ===");
 
         List<Job> jobs = List.of(
                 new Job("P1", 0, 5),
@@ -109,7 +108,7 @@ public class Main {
         double crossoverRate = sc.nextDouble();
         System.out.print("Enter mutation rate (0.0 - 1.0): ");
         double mutationRate = sc.nextDouble();
-        sc.nextLine(); // consume newline
+        sc.nextLine();
 
         System.out.print("\nEnter fitness limit for early stopping  between (0, 1): ");
         double fitnessLimitStop =  sc.nextDouble();
@@ -119,12 +118,12 @@ public class Main {
         GAParameters params = new GAParameters.Builder()
                 .setPopulationSize(50)
                 .setGenerations(200)
-                .setChromosomeLength(jobs.size())    // <- important
+                .setChromosomeLength(jobs.size())
                 .setCrossoverRate(crossoverRate)
                 .setMutationRate(mutationRate)
                 .setFitnessThreshold(fitnessLimitStop)
-                .setRepresentationType("JOB")        // must match RepresentationType enum
-                .setRandomSeed(seed)                 // same seed used to create initial pop
+                .setRepresentationType("JOB")
+                .setRandomSeed(seed)
                 .setInitialPopulation(initialPopulation)
                 .build();
 
@@ -167,28 +166,28 @@ public class Main {
         SelectionStrategy selection = switch (selChoice) {
             case 1 -> OperatorFactory.createSelection("tournament");
             case 2 -> OperatorFactory.createSelection("roulette");
-            default -> null;
+            default -> OperatorFactory.createSelection("tournament");
         };
 
         CrossoverStrategy crossover = switch (crossChoice) {
             case 1 -> OperatorFactory.createCrossover("order", params);
-            case 2 -> new NPointCrossover(nPoints, params.getCrossoverRate());
+            case 2 -> OperatorFactory.createCrossover("npoint", params);
             case 3 -> OperatorFactory.createCrossover("uniform", params);
-            default -> null;
+            default -> OperatorFactory.createCrossover("order", params);
         };
 
         MutationStrategy mutation = switch (mutChoice) {
             case 1 -> OperatorFactory.createMutation("swap", params);
             case 2 -> OperatorFactory.createMutation("bitflip", params);
             case 3 -> OperatorFactory.createMutation("floating", params);
-            default -> null;
+            default -> OperatorFactory.createMutation("swap", params);
         };
 
         ReplacementStrategy replacement = switch (repChoice) {
             case 1 -> OperatorFactory.createReplacement("steady");
             case 2 -> OperatorFactory.createReplacement("elitism");
             case 3 -> OperatorFactory.createReplacement("generational");
-            default -> null;
+            default -> OperatorFactory.createReplacement("steady");
         };
 
 
@@ -213,10 +212,10 @@ public class Main {
 
 // --- Option B: Advanced setup (custom operators) ---
         /*
-        SelectionStrategy selection = new TournamentSelection();
-        CrossoverStrategy crossover = new NPointCrossover(2, params.getCrossoverRate());
-        MutationStrategy mutation = new SwapMutation(params.getMutationRate());
-        ReplacementStrategy replacement = new SteadyStateReplacement();
+        SelectionStrategy selection = OperatorFactory.createSelection("tournament");;
+        CrossoverStrategy crossover = OperatorFactory.createCrossover("npoint", params);
+        MutationStrategy mutation = OperatorFactory.createMutation("swap", params);
+        ReplacementStrategy replacement = OperatorFactory.createReplacement("steady");
 
         GeneticAlgorithmEngine gaCustom = new GeneticAlgorithmEngine.Builder(params, fitnessFunction)
                 .withSelection(selection)
