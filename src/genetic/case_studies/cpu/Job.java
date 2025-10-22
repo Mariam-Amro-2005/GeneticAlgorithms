@@ -1,5 +1,7 @@
 package genetic.case_studies.cpu;
 
+import java.util.Objects;
+
 public class Job {
     private final String name;
     private final int arrivalTime;
@@ -18,5 +20,19 @@ public class Job {
     @Override
     public String toString() {
         return name + "(A:" + arrivalTime + ",B:" + burstTime + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Job job)) return false;
+        return arrivalTime == job.arrivalTime &&
+                burstTime == job.burstTime &&
+                Objects.equals(name, job.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, arrivalTime, burstTime);
     }
 }

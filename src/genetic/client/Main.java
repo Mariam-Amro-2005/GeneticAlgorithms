@@ -28,7 +28,7 @@ public class Main {
 
         // create initial population of job permutations using the same seed
         Random rng = new Random(seed);
-        List<Chromosome> initialPopulation = createJobInitialPopulation(jobs, 4, rng);
+        List<Chromosome> initialPopulation = createJobInitialPopulation(jobs, 30, rng);
 
         // Step 1: Configure parameters (chromosome length must equal number of jobs)
         GAParameters params = new GAParameters.Builder()

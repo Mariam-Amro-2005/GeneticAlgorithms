@@ -19,34 +19,46 @@ public class OrderCrossover implements CrossoverStrategy {
             point2 = tmp;
         }
 
-        // Initialize child genes as nulls
+        // Initialize children with null placeholders
         List<Gene<?>> child1Genes = new ArrayList<>(Collections.nCopies(length, null));
         List<Gene<?>> child2Genes = new ArrayList<>(Collections.nCopies(length, null));
 
-        // Copy slice from parent1 to child1 and parent2 to child2
+        // Copy the segment from parents
         for (int i = point1; i <= point2; i++) {
             child1Genes.set(i, parent1.getGenes().get(i).copy());
             child2Genes.set(i, parent2.getGenes().get(i).copy());
         }
 
-        // Fill remaining positions in order from the other parent
+        // Fill remaining positions from the opposite parent
         fillRemaining(child1Genes, parent2, point2);
         fillRemaining(child2Genes, parent1, point2);
 
-        Chromosome child1 = new Chromosome(parent1.getType(), child1Genes);
-        Chromosome child2 = new Chromosome(parent2.getType(), child2Genes);
-        return new Chromosome[]{child1, child2};
+        return new Chromosome[]{
+                new Chromosome(parent1.getType(), child1Genes),
+                new Chromosome(parent2.getType(), child2Genes)
+        };
     }
 
     private void fillRemaining(List<Gene<?>> childGenes, Chromosome otherParent, int start) {
         int length = otherParent.length();
         int index = (start + 1) % length;
 
+        // Track genes already used in the child (compare by value)
+        Set<Object> usedValues = new HashSet<>();
+        for (Gene<?> g : childGenes) {
+            if (g != null)
+                usedValues.add(g.getValue());
+        }
+
         for (Gene<?> g : otherParent.getGenes()) {
-            if (!childGenes.contains(g)) {
+            if (!usedValues.contains(g.getValue())) {
+                // Find the next empty slot
                 while (childGenes.get(index) != null)
                     index = (index + 1) % length;
+
                 childGenes.set(index, g.copy());
+                usedValues.add(g.getValue()); // mark as used
+                index = (index + 1) % length; // move forward
             }
         }
     }
