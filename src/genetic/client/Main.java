@@ -40,7 +40,9 @@ public class Main {
 
         PerformanceMetrics metrics = new PerformanceMetrics();
         metrics.start();
+
         Chromosome best = ga.run();
+
         metrics.stop();
 
         metrics.setFinalFitness(best.getFitness());
