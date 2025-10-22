@@ -1,14 +1,11 @@
 package genetic.core;
 
-import genetic.case_studies.cpu.Job;
-import genetic.case_studies.cpu.JobGene;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Represents a chromosome consisting of a list of genes.
- * Supports multiple representation types (binary, integer, floating point, or custom).
+ * Initialization and representation logic are now fully decoupled.
  */
 public class Chromosome implements Comparable<Chromosome> {
     private List<Gene<?>> genes;
@@ -17,28 +14,13 @@ public class Chromosome implements Comparable<Chromosome> {
 
     // --- Constructors ---
     public Chromosome(RepresentationType type, int length, Random random) {
-        this.type = type;
-        this.genes = new ArrayList<>();
-        initializeGenes(length, random);
+        this.type = Objects.requireNonNull(type);
+        this.genes = GeneInitializerRegistry.get(type).initialize(length, random);
     }
 
     public Chromosome(RepresentationType type, List<Gene<?>> genes) {
-        this.type = type;
-        // Defensive copy to prevent external modification
+        this.type = Objects.requireNonNull(type);
         this.genes = new ArrayList<>(genes);
-    }
-
-    // --- Initialization ---
-    private void initializeGenes(int length, Random random) {
-        for (int i = 0; i < length; i++) {
-            genes.add(switch (type) {
-                case BINARY -> new BinaryGene(random);
-                case INTEGER -> new IntegerGene(random);
-                case FLOATING_POINT -> new FloatingPointGene(random);
-                case JOB ->  throw new IllegalStateException(
-                        "JOB type cannot be randomly initialized. Provide an initial population or a populationInitializer in GAParameters.");
-            });
-        }
     }
 
     // --- Accessors ---
@@ -80,8 +62,7 @@ public class Chromosome implements Comparable<Chromosome> {
     // --- Comparison ---
     @Override
     public int compareTo(Chromosome other) {
-        // Higher fitness = better
-        return Double.compare(other.fitness, this.fitness);
+        return Double.compare(other.fitness, this.fitness); // Higher is better
     }
 
     // --- Representation ---
