@@ -5,8 +5,8 @@ import java.util.Random;
 public class BinaryGene implements Gene<Boolean> {
     private Boolean value;
 
-    public BinaryGene() {
-        this.value = new Random().nextBoolean();
+    public BinaryGene(Random random) {
+        this.value = random.nextBoolean();
     }
 
     public BinaryGene(Boolean value) {

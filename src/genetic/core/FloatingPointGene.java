@@ -1,16 +1,20 @@
 package genetic.core;
-
 import java.util.Random;
 
 public class FloatingPointGene implements Gene<Double> {
     private Double value;
 
-    public FloatingPointGene() {
-        this.value = new Random().nextDouble(); // range 0.0–1.0
+    public FloatingPointGene(Random random) {
+        this.value = random.nextDouble(); // Default 0.0–1.0
     }
 
     public FloatingPointGene(Double value) {
         this.value = value;
+    }
+
+    /** Initialize with range [min, max] */
+    public FloatingPointGene(Double lowerBound, Double upperBound, Random random) {
+        this.value = lowerBound + (upperBound - lowerBound) * random.nextDouble();
     }
 
     @Override
@@ -30,6 +34,6 @@ public class FloatingPointGene implements Gene<Double> {
 
     @Override
     public String toString() {
-        return String.format("%.2f", value);
+        return String.format("%.3f", value);
     }
 }

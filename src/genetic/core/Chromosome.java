@@ -1,30 +1,48 @@
 package genetic.core;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * Represents a chromosome consisting of a list of genes.
+ * Supports multiple representation types (binary, integer, floating point, or custom).
+ */
 public class Chromosome implements Comparable<Chromosome> {
     private List<Gene<?>> genes;
     private double fitness;
     private final RepresentationType type;
 
-    public Chromosome(RepresentationType type, int length) {
+    // --- Constructors ---
+    public Chromosome(RepresentationType type, int length, Random random) {
         this.type = type;
         this.genes = new ArrayList<>();
-        initializeGenes(length);
+        initializeGenes(length, random);
     }
 
-    private void initializeGenes(int length) {
+    public Chromosome(RepresentationType type, List<Gene<?>> genes) {
+        this.type = type;
+        // Defensive copy to prevent external modification
+        this.genes = new ArrayList<>(genes);
+    }
+
+    // --- Initialization ---
+    private void initializeGenes(int length, Random random) {
         for (int i = 0; i < length; i++) {
             genes.add(switch (type) {
-                case BINARY -> new BinaryGene();
-                case INTEGER -> new IntegerGene();
-                case FLOATING_POINT -> new FloatingPointGene();
+                case BINARY -> new BinaryGene(random);
+                case INTEGER -> new IntegerGene(random);
+                case FLOATING_POINT -> new FloatingPointGene(random);
             });
         }
     }
 
+    // --- Accessors ---
     public List<Gene<?>> getGenes() {
         return genes;
+    }
+
+    public void setGenes(List<Gene<?>> genes) {
+        this.genes = new ArrayList<>(genes);
     }
 
     public double getFitness() {
@@ -43,22 +61,27 @@ public class Chromosome implements Comparable<Chromosome> {
         return genes.size();
     }
 
+    // --- Copying ---
     public Chromosome copy() {
-        Chromosome clone = new Chromosome(type, genes.size());
-        List<Gene<?>> clonedGenes = new ArrayList<>();
-        for (Gene<?> g : this.genes) clonedGenes.add(g.copy());
-        clone.genes = clonedGenes;
-        clone.fitness = fitness;
+        List<Gene<?>> copiedGenes = genes.stream()
+                .map(Gene::copy)
+                .collect(Collectors.toList());
+
+        Chromosome clone = new Chromosome(type, copiedGenes);
+        clone.setFitness(fitness);
         return clone;
     }
 
+    // --- Comparison ---
     @Override
-    public int compareTo(Chromosome o) {
-        return Double.compare(o.fitness, this.fitness);
+    public int compareTo(Chromosome other) {
+        // Higher fitness = better
+        return Double.compare(other.fitness, this.fitness);
     }
 
+    // --- Representation ---
     @Override
     public String toString() {
-        return genes.toString() + " | Fitness: " + fitness;
+        return genes.toString() + " | Fitness: " + String.format("%.4f", fitness);
     }
 }

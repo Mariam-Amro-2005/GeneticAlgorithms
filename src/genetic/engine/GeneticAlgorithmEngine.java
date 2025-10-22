@@ -7,6 +7,7 @@ import genetic.operators.mutation.*;
 import genetic.replacement.*;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Reusable Genetic Algorithm Engine with a Builder pattern.
@@ -20,6 +21,7 @@ public class GeneticAlgorithmEngine {
     private final MutationStrategy mutation;
     private final ReplacementStrategy replacement;
 
+    private final Random random;
     private Population population;
 
     /** Private constructor — only accessible via the Builder */
@@ -30,13 +32,50 @@ public class GeneticAlgorithmEngine {
         this.crossover = builder.crossover;
         this.mutation = builder.mutation;
         this.replacement = builder.replacement;
+
+        // get the shared Random from GAParameters (defensive fallback)
+        Random provided = null;
+        try {
+            provided = this.params.getRandom();
+        } catch (Exception ignored) { }
+        this.random = (provided != null) ? provided : new Random();
     }
 
     /** Initializes the population and evaluates initial fitness. */
     private void initializePopulation() {
+        // 1) If the client provided a ready population, use it (defensive copy)
+        List<Chromosome> providedPop = params.getInitialPopulation();
+        if (providedPop != null && !providedPop.isEmpty()) {
+            population = new Population();
+            for (Chromosome c : providedPop) {
+                Chromosome copy = c.copy();
+                copy.setFitness(fitnessFunction.evaluate(copy));
+                population.addChromosome(copy);
+            }
+            return;
+        }
+
+        // 2) If the client provided a population initializer Supplier, use it
+        Supplier<List<Chromosome>> initializer = params.getPopulationInitializer();
+        if (initializer != null) {
+            List<Chromosome> built = initializer.get();
+            population = new Population();
+            for (Chromosome c : built) {
+                Chromosome copy = c.copy();
+                copy.setFitness(fitnessFunction.evaluate(copy));
+                population.addChromosome(copy);
+            }
+            return;
+        }
+
+        // 3) Default: create random population according to representation
         population = new Population();
         for (int i = 0; i < params.getPopulationSize(); i++) {
-            Chromosome c = new Chromosome(params.getRepresentationType(), params.getChromosomeLength());
+            Chromosome c = new Chromosome(params.getRepresentationType(), params.getChromosomeLength(), random);
+
+            // If any gene types support re-initialization via Random, engine doesn't assume method signatures.
+            // Genes constructed by their default constructors will already be randomized.
+            // Evaluate fitness and add
             c.setFitness(fitnessFunction.evaluate(c));
             population.addChromosome(c);
         }
@@ -67,7 +106,12 @@ public class GeneticAlgorithmEngine {
                 offspringList.add(children[1]);
         }
 
-        Population offspringPop = new Population(offspringList);
+        // create offspring Population
+        Population offspringPop = new Population();
+        for (Chromosome c : offspringList) {
+            offspringPop.addChromosome(c);
+        }
+
         evaluatePopulation(offspringPop);
 
         population = replacement.replace(population, offspringPop);
@@ -78,6 +122,8 @@ public class GeneticAlgorithmEngine {
 
     /** Runs the GA evolution loop. */
     public void run() {
+        // initialize population (may use provided population / initializer)
+        params.validate();
         initializePopulation();
 
         for (int generation = 1; generation <= params.getGenerations(); generation++) {
@@ -91,7 +137,7 @@ public class GeneticAlgorithmEngine {
 
     /** Returns the best chromosome in the final population. */
     public Chromosome getBestSolution() {
-        return population.getBest();
+        return (population == null) ? null : population.getBest();
     }
 
     // ---------------------------------------------------------

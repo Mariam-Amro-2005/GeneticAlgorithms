@@ -1,24 +1,33 @@
 package genetic.client;
 
+import genetic.case_studies.cpu.CPUJobScheduling;
+import genetic.case_studies.cpu.Job;
 import genetic.engine.*;
-import genetic.case_studies.*;
-import genetic.operators.selection.*;
-import genetic.operators.crossover.*;
-import genetic.operators.mutation.*;
-import genetic.replacement.*;
+
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("=== GA Library Demo: CPU Scheduling ===");
 
+        List<Job> jobs = List.of(
+                new Job("P1", 0, 5),
+                new Job("P2", 2, 3),
+                new Job("P3", 4, 1),
+                new Job("P4", 6, 7)
+        );
+
         // Step 1: Configure parameters
-        GAParameters params = new GAParameters();
-        params.setPopulationSize(20);
-        params.setGenerations(100);
-        params.setChromosomeLength(5);
-        params.setCrossoverRate(0.8);
-        params.setMutationRate(0.05);
-        params.setRepresentationType("Integer");
+        GAParameters params = new GAParameters.Builder()
+                .setPopulationSize(30)
+                .setGenerations(200)
+                .setChromosomeLength(8)
+                .setCrossoverRate(0.7)
+                .setMutationRate(0.1)
+                .setRepresentationType("Floating_Point")
+                .setRandomSeed(42) // Optional reproducibility
+                .build();
+
 
         // Step 2: Define fitness function (case study)
         FitnessFunction fitnessFunction = new CPUJobScheduling();
