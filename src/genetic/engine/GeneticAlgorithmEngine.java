@@ -84,7 +84,7 @@ public class GeneticAlgorithmEngine {
     }
 
     /** Executes a single generation of evolution. */
-    private void evolveGeneration(int generation) {
+    private int evolveGeneration(int generation) {
         List<Chromosome> offspringList = new ArrayList<>();
 
         while (offspringList.size() < params.getPopulationSize()) {
@@ -116,8 +116,17 @@ public class GeneticAlgorithmEngine {
                 .average()
                 .orElse(0.0);
 
+        if(best.getFitness() >= params.getFitnessLimitStop()) {
+//            System.out.println("Early stopping at generation " + generation + " | Fitness limit reached: " + best.getFitness());
+//            generation = params.getGenerations(); // to exit loop
+
+            return 1;
+        }
+
         System.out.printf("Generation %d | Best: %.4f | Avg: %.4f%n", generation, best.getFitness(), avg);
 //        System.out.printf("Generation %d | Best Fitness: %.4f%n", generation, best.getFitness());
+
+        return 0;
     }
 
     /** Runs the GA evolution loop. */
@@ -127,7 +136,7 @@ public class GeneticAlgorithmEngine {
         initializePopulation();
 
         for (int generation = 1; generation <= params.getGenerations(); generation++) {
-            evolveGeneration(generation);
+            if(evolveGeneration(generation) != 0) break;
         }
 
         Chromosome finalBest = population.getBest();

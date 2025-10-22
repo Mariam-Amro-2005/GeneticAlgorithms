@@ -14,6 +14,7 @@ public class GAParameters {
     private final int chromosomeLength;
     private final double crossoverRate;
     private final double mutationRate;
+    private final double fitnessLimitStop;
     private final RepresentationType representationType;
     private final Random random;
 
@@ -32,6 +33,7 @@ public class GAParameters {
         this.random = builder.random;
         this.initialPopulation = builder.initialPopulation;
         this.populationInitializer = builder.populationInitializer;
+        this.fitnessLimitStop = builder.fitnessLimitStop;
     }
 
     // --- Getters ---
@@ -40,6 +42,7 @@ public class GAParameters {
     public int getChromosomeLength() { return chromosomeLength; }
     public double getCrossoverRate() { return crossoverRate; }
     public double getMutationRate() { return mutationRate; }
+    public double getFitnessLimitStop() { return fitnessLimitStop; }
     public RepresentationType getRepresentationType() { return representationType; }
     public Random getRandom() { return random; }
     public List<Chromosome> getInitialPopulation() { return initialPopulation; }
@@ -62,6 +65,7 @@ public class GAParameters {
         private int chromosomeLength = 10;
         private double crossoverRate = 0.8;
         private double mutationRate = 0.05;
+        private double fitnessLimitStop = Double.MAX_VALUE;
         private RepresentationType representationType = RepresentationType.INTEGER;
         private Random random = new Random();
         private List<Chromosome> initialPopulation;
@@ -89,6 +93,11 @@ public class GAParameters {
 
         public Builder setMutationRate(double mutationRate) {
             this.mutationRate = mutationRate;
+            return this;
+        }
+
+        public Builder setFitnessLimitStop(double fitnessLimitStop) {
+            this.fitnessLimitStop = fitnessLimitStop;
             return this;
         }
 

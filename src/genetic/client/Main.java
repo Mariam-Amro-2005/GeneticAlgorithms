@@ -24,7 +24,7 @@ public class Main {
         // Build and run GA with defaults
         GeneticAlgorithmEngine ga = buildEngineFromUserInput(fitnessFunction);
 
-        ga.run();
+//        ga.run();
 
         Chromosome best = ga.run();
         CPUJobScheduling scheduler = (CPUJobScheduling) fitnessFunction;
@@ -97,6 +97,10 @@ public class Main {
         double mutationRate = sc.nextDouble();
         sc.nextLine(); // consume newline
 
+        System.out.print("\nEnter fitness limit for early stopping  between (0, 1): ");
+        double fitnessLimitStop =  sc.nextDouble();
+
+
 
         GAParameters params = new GAParameters.Builder()
                 .setPopulationSize(50)
@@ -104,6 +108,7 @@ public class Main {
                 .setChromosomeLength(jobs.size())    // <- important
                 .setCrossoverRate(crossoverRate)
                 .setMutationRate(mutationRate)
+                .setFitnessLimitStop(fitnessLimitStop)
                 .setRepresentationType("JOB")        // must match RepresentationType enum
                 .setRandomSeed(seed)                 // same seed used to create initial pop
                 .setInitialPopulation(initialPopulation)
@@ -171,6 +176,7 @@ public class Main {
             case 3 -> OperatorFactory.createReplacement("generational");
             default -> null;
         };
+
 
         // === Combine everything ===
         GeneticAlgorithmEngine.Builder ga = new GeneticAlgorithmEngine.Builder(
