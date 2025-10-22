@@ -111,7 +111,13 @@ public class GeneticAlgorithmEngine {
         population = replacement.replace(population, offspringPop);
 
         Chromosome best = population.getBest();
-        System.out.printf("Generation %d | Best Fitness: %.4f%n", generation, best.getFitness());
+        double avg = population.getIndividuals().stream()
+                .mapToDouble(Chromosome::getFitness)
+                .average()
+                .orElse(0.0);
+
+        System.out.printf("Generation %d | Best: %.4f | Avg: %.4f%n", generation, best.getFitness(), avg);
+//        System.out.printf("Generation %d | Best Fitness: %.4f%n", generation, best.getFitness());
     }
 
     /** Runs the GA evolution loop. */

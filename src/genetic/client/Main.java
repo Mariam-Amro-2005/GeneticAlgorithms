@@ -19,24 +19,33 @@ public class Main {
 
         List<Job> jobs = List.of(
                 new Job("P1", 0, 5),
-                new Job("P2", 2, 3),
-                new Job("P3", 4, 1),
-                new Job("P4", 6, 7)
+                new Job("P2", 1, 3),
+                new Job("P3", 2, 6),
+                new Job("P4", 4, 2),
+                new Job("P5", 6, 8),
+                new Job("P6", 7, 4),
+                new Job("P7", 8, 5),
+                new Job("P8", 10, 7),
+                new Job("P9", 12, 3),
+                new Job("P10", 13, 9),
+                new Job("P11", 15, 2),
+                new Job("P12", 16, 6)
         );
+
 
         final long seed = 42L; // reproducible
 
         // create initial population of job permutations using the same seed
         Random rng = new Random(seed);
-        List<Chromosome> initialPopulation = createJobInitialPopulation(jobs, 30, rng);
+        List<Chromosome> initialPopulation = createJobInitialPopulation(jobs, 50, rng);
 
         // Step 1: Configure parameters (chromosome length must equal number of jobs)
         GAParameters params = new GAParameters.Builder()
-                .setPopulationSize(30)
+                .setPopulationSize(50)
                 .setGenerations(200)
                 .setChromosomeLength(jobs.size())    // <- important
-                .setCrossoverRate(0.7)
-                .setMutationRate(0.1)
+                .setCrossoverRate(0.9)
+                .setMutationRate(0.25)
                 .setRepresentationType("JOB")        // must match RepresentationType enum
                 .setRandomSeed(seed)                 // same seed used to create initial pop
                 .setInitialPopulation(initialPopulation)
@@ -49,6 +58,25 @@ public class Main {
         // Build and run GA with defaults
         GeneticAlgorithmEngine ga = new GeneticAlgorithmEngine.Builder(params, fitnessFunction).build();
         ga.run();
+
+        Chromosome best = ga.run();
+        CPUJobScheduling scheduler = (CPUJobScheduling) fitnessFunction;
+
+        int attempts = 0;
+        while (!scheduler.isValidSchedule(best) && attempts < 5) {
+            System.out.println("❌ Invalid schedule found — restarting evolution...");
+            best = ga.run();
+            attempts++;
+        }
+
+        if (scheduler.isValidSchedule(best)) {
+            System.out.println("✅ Valid schedule found!");
+        } else {
+            System.out.println("⚠️ Could not find a valid schedule after retries.");
+        }
+
+        System.out.println("Final Solution: " + best);
+
     }
 
     private static List<Chromosome> createJobInitialPopulation(List<Job> jobs, int populationSize, Random rng) {

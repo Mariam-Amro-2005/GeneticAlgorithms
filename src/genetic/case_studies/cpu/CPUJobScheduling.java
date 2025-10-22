@@ -1,42 +1,71 @@
 package genetic.case_studies.cpu;
 
-import genetic.core.*;
+import genetic.core.Chromosome;
 import genetic.engine.FitnessFunction;
+import genetic.core.Gene;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class CPUJobScheduling implements FitnessFunction {
 
-    private final double weight1 = 0.5; // weight for waiting time
-    private final double weight2 = 0.5; // weight for turnaround time
-
     @Override
     public Double evaluate(Chromosome chromosome) {
-        List<JobGene> jobGenes = chromosome.getGenes().stream()
-                .map(g -> (JobGene) g)
-                .toList();
+        List<Gene<?>> genes = chromosome.getGenes();
+        double currentTime = 0.0;
+        double totalWaiting = 0.0;
+        double totalTurnaround = 0.0;
 
-        int currentTime = 0;
-        int totalWait = 0;
-        int totalTurnaround = 0;
+        for (Gene<?> gene : genes) {
+            Job job = ((JobGene) gene).getValue();
 
-        for (JobGene jobGene : jobGenes) {
-            Job job = jobGene.getValue();
-            if (currentTime < job.getArrivalTime())
-                currentTime = job.getArrivalTime(); // CPU idle until job arrives
+            // If CPU is idle until job arrives, advance time
+            if (currentTime < job.getArrivalTime()) {
+                currentTime = job.getArrivalTime();
+            }
 
-            int waitTime = currentTime - job.getArrivalTime();
-            int turnaround = waitTime + job.getBurstTime();
+            double waitingTime = currentTime - job.getArrivalTime();
+            totalWaiting += waitingTime;
 
-            totalWait += waitTime;
-            totalTurnaround += turnaround;
+            currentTime += job.getBurstTime();
+            double turnaroundTime = currentTime - job.getArrivalTime();
+            totalTurnaround += turnaroundTime;
+        }
+
+        int n = genes.size();
+        double avgWaiting = totalWaiting / n;
+        double avgTurnaround = totalTurnaround / n;
+
+        // We want smaller waiting and turnaround times → higher fitness
+        // Using inverse to make fitness directly proportional to performance
+        double fitness = 1.0 / (1.0 + (1.5 * avgWaiting) + avgTurnaround);
+
+        // Optionally normalize to prevent near-zero values
+        return Math.max(0.0001, fitness);
+    }
+    public boolean isValidSchedule(Chromosome chrom) {
+        Set<Job> seen = new HashSet<>();
+        double currentTime = 0.0;
+
+        for (Gene<?> gene : chrom.getGenes()) {
+            Job job = ((JobGene) gene).getValue();
+
+            // 1️⃣ Check for duplicate jobs
+            if (!seen.add(job)) {
+                return false; // duplicate
+            }
+
+            // 2️⃣ Check if job starts before its arrival time
+            if (currentTime < job.getArrivalTime()) {
+                return false; // invalid start time
+            }
+
+            // advance CPU time
             currentTime += job.getBurstTime();
         }
 
-        double avgWait = (double) totalWait / jobGenes.size();
-        double avgTurnaround = (double) totalTurnaround / jobGenes.size();
-
-        // Invert because we want to minimize time but maximize fitness
-        return weight1 * (1.0 / avgWait) + weight2 * (1.0 / avgTurnaround);
+        return true; // passed all checks
     }
+
 }
