@@ -24,8 +24,7 @@ public class TournamentSelection implements SelectionStrategy {
     }
 
     @Override
-    public Chromosome selectParent(Population population) {
-        Random random = new Random();
+    public Chromosome selectParent(Population population, Random random) {
         List<Chromosome> competitors = new ArrayList<>();
         // Randomly select several chromosomes based on the tournament size.
         for (int i = 0; i < tournamentSize; i++) {

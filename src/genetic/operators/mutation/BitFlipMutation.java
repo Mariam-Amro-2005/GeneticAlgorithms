@@ -11,8 +11,7 @@ public class BitFlipMutation implements MutationStrategy {
     }
 
     @Override
-    public void mutate(Chromosome chromosome) {
-        Random random = new Random();
+    public void mutate(Chromosome chromosome, Random random) {
 
         if (chromosome.getType() != RepresentationType.BINARY)
             return;

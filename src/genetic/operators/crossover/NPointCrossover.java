@@ -19,8 +19,7 @@ public class NPointCrossover implements CrossoverStrategy {
     }
 
     @Override
-    public Chromosome[] crossover(Chromosome parent1, Chromosome parent2) {
-        Random random = new Random();
+    public Chromosome[] crossover(Chromosome parent1, Chromosome parent2, Random random) {
 
         // check num of points
         int length = parent1.length();

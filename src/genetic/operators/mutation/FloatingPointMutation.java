@@ -13,11 +13,10 @@ public class FloatingPointMutation implements MutationStrategy {
     }
 
     @Override
-    public void mutate(Chromosome chromosome) {
+    public void mutate(Chromosome chromosome, Random random) {
         if (chromosome.getType() != RepresentationType.FLOATING_POINT)
             return;
 
-        Random random = new Random();
         for (Gene<?> gene : chromosome.getGenes()) {
             if (random.nextDouble() < mutationRate) {
                 FloatingPointGene g = (FloatingPointGene) gene;

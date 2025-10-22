@@ -21,8 +21,7 @@ public class SwapMutation implements MutationStrategy {
     }
 
     @Override
-    public void mutate(Chromosome chromosome) {
-        Random random = new Random();
+    public void mutate(Chromosome chromosome, Random random) {
         // Apply mutation with probability = mutationRate
         if (random.nextDouble() < mutationRate) {
             // Get the gene list (List<Gene<?>>)

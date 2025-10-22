@@ -32,13 +32,7 @@ public class GeneticAlgorithmEngine {
         this.crossover = builder.crossover;
         this.mutation = builder.mutation;
         this.replacement = builder.replacement;
-
-        // get the shared Random from GAParameters (defensive fallback)
-        Random provided = null;
-        try {
-            provided = this.params.getRandom();
-        } catch (Exception ignored) { }
-        this.random = (provided != null) ? provided : new Random();
+        this.random = Optional.ofNullable(params.getRandom()).orElseGet(Random::new);
     }
 
     /** Initializes the population and evaluates initial fitness. */
@@ -90,16 +84,16 @@ public class GeneticAlgorithmEngine {
     }
 
     /** Executes a single generation of evolution. */
-    private void evolveOneGeneration(int generation) {
+    private void evolveGeneration(int generation) {
         List<Chromosome> offspringList = new ArrayList<>();
 
         while (offspringList.size() < params.getPopulationSize()) {
-            Chromosome parent1 = selection.selectParent(population);
-            Chromosome parent2 = selection.selectParent(population);
+            Chromosome parent1 = selection.selectParent(population, random);
+            Chromosome parent2 = selection.selectParent(population,  random);
 
-            Chromosome[] children = crossover.crossover(parent1, parent2);
-            mutation.mutate(children[0]);
-            mutation.mutate(children[1]);
+            Chromosome[] children = crossover.crossover(parent1, parent2, random);
+            mutation.mutate(children[0], random);
+            mutation.mutate(children[1], random);
 
             offspringList.add(children[0]);
             if (offspringList.size() < params.getPopulationSize())
@@ -121,18 +115,19 @@ public class GeneticAlgorithmEngine {
     }
 
     /** Runs the GA evolution loop. */
-    public void run() {
+    public Chromosome run() {
         // initialize population (may use provided population / initializer)
         params.validate();
         initializePopulation();
 
         for (int generation = 1; generation <= params.getGenerations(); generation++) {
-            evolveOneGeneration(generation);
+            evolveGeneration(generation);
         }
 
         Chromosome finalBest = population.getBest();
         System.out.println("\n=== Evolution Complete ===");
         System.out.println("Best Solution: " + finalBest);
+        return finalBest;
     }
 
     /** Returns the best chromosome in the final population. */

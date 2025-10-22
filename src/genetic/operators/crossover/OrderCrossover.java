@@ -1,52 +1,53 @@
 package genetic.operators.crossover;
 
-import genetic.core.*;
+import genetic.core.Chromosome;
+import genetic.core.Gene;
+
 import java.util.*;
 
 public class OrderCrossover implements CrossoverStrategy {
 
     @Override
-    public Chromosome[] crossover(Chromosome parent1, Chromosome parent2) {
-        if (parent1.getType() != RepresentationType.INTEGER)
-            return new Chromosome[] { parent1.copy(), parent2.copy() };
+    public Chromosome[] crossover(Chromosome parent1, Chromosome parent2, Random random) {
+        int length = parent1.length();
+        int point1 = random.nextInt(length);
+        int point2 = random.nextInt(length);
 
-        int size = parent1.length();
-        Random random = new Random();
-
-        int start = random.nextInt(size);
-        int end = random.nextInt(size - start) + start;
-
-        Chromosome child1 = parent1.copy();
-        Chromosome child2 = parent2.copy();
-
-        List<Gene<?>> genes1 = child1.getGenes();
-        List<Gene<?>> genes2 = child2.getGenes();
-
-        // Preserve a segment
-        Set<Integer> segment1 = new HashSet<>();
-        Set<Integer> segment2 = new HashSet<>();
-
-        for (int i = start; i < end; i++) {
-            segment1.add((Integer) ((IntegerGene) genes1.get(i)).getValue());
-            segment2.add((Integer) ((IntegerGene) genes2.get(i)).getValue());
+        if (point1 > point2) {
+            int tmp = point1;
+            point1 = point2;
+            point2 = tmp;
         }
 
-        // Fill remaining positions
-        int idx1 = end % size, idx2 = end % size;
-        for (int i = 0; i < size; i++) {
-            int val1 = (Integer) ((IntegerGene) parent2.getGenes().get((end + i) % size)).getValue();
-            if (!segment1.contains(val1)) {
-                ((IntegerGene) genes1.get(idx1)).setValue(val1);
-                idx1 = (idx1 + 1) % size;
-            }
+        // Initialize child genes as nulls
+        List<Gene<?>> child1Genes = new ArrayList<>(Collections.nCopies(length, null));
+        List<Gene<?>> child2Genes = new ArrayList<>(Collections.nCopies(length, null));
 
-            int val2 = (Integer) ((IntegerGene) parent1.getGenes().get((end + i) % size)).getValue();
-            if (!segment2.contains(val2)) {
-                ((IntegerGene) genes2.get(idx2)).setValue(val2);
-                idx2 = (idx2 + 1) % size;
-            }
+        // Copy slice from parent1 to child1 and parent2 to child2
+        for (int i = point1; i <= point2; i++) {
+            child1Genes.set(i, parent1.getGenes().get(i).copy());
+            child2Genes.set(i, parent2.getGenes().get(i).copy());
         }
 
+        // Fill remaining positions in order from the other parent
+        fillRemaining(child1Genes, parent2, point2);
+        fillRemaining(child2Genes, parent1, point2);
+
+        Chromosome child1 = new Chromosome(parent1.getType(), child1Genes);
+        Chromosome child2 = new Chromosome(parent2.getType(), child2Genes);
         return new Chromosome[]{child1, child2};
+    }
+
+    private void fillRemaining(List<Gene<?>> childGenes, Chromosome otherParent, int start) {
+        int length = otherParent.length();
+        int index = (start + 1) % length;
+
+        for (Gene<?> g : otherParent.getGenes()) {
+            if (!childGenes.contains(g)) {
+                while (childGenes.get(index) != null)
+                    index = (index + 1) % length;
+                childGenes.set(index, g.copy());
+            }
+        }
     }
 }

@@ -11,8 +11,7 @@ public class UniformCrossover implements CrossoverStrategy {
     }
 
     @Override
-    public Chromosome[] crossover(Chromosome p1, Chromosome p2) {
-        Random random = new Random();
+    public Chromosome[] crossover(Chromosome p1, Chromosome p2, Random random) {
         Chromosome c1 = p1.copy();
         Chromosome c2 = p2.copy();
 
