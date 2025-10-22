@@ -16,7 +16,7 @@ public class TournamentSelection implements SelectionStrategy {
     private final int tournamentSize;
 
     public TournamentSelection() {
-        this(3); // اThe default size of the tournament
+        this(3);    // The default size of the tournament.
     }
 
     public TournamentSelection(int tournamentSize) {

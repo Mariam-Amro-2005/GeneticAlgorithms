@@ -142,10 +142,6 @@ public class GeneticAlgorithmEngine {
             }
         }
 
-        if (!thresholdReached && params.getFitnessThreshold() != 1.0) {
-            System.out.println("⚠️ Fitness threshold not reached within the allotted generations.");
-        }
-
         Chromosome finalBest = getBestSolution();
 
         // --- Validation retry loop ---
@@ -172,6 +168,10 @@ public class GeneticAlgorithmEngine {
 
             finalBest = getBestSolution();
             attempts++;
+        }
+
+        if (!thresholdReached && params.getFitnessThreshold() != 1.0) {
+            System.out.println("⚠️ Fitness threshold not reached within the allotted generations.");
         }
 
         System.out.printf("Attempts: %d%n", attempts);
