@@ -1,12 +1,14 @@
 package genetic.client;
 
 import genetic.case_studies.cpu.*;
+import genetic.core.Chromosome;
 import genetic.engine.*;
 import genetic.operators.crossover.CrossoverStrategy;
 import genetic.operators.mutation.MutationStrategy;
 import genetic.operators.selection.SelectionStrategy;
 import genetic.replacement.ReplacementStrategy;
 import genetic.util.InputUtils;
+import genetic.util.PerformanceMetrics;
 import genetic.util.PopulationUtils;
 
 import java.util.List;
@@ -23,7 +25,16 @@ public class CLIApp {
         GeneticAlgorithmEngine engine = configureInteractively(fitnessFunction, jobs);
 
         System.out.println("\n🚀 Starting evolution...\n");
-        engine.run();
+
+        PerformanceMetrics metrics = new PerformanceMetrics();
+        metrics.start();
+        Chromosome best = engine.run();
+        metrics.stop();
+
+        metrics.setFinalFitness(best.getFitness());
+        metrics.setGenerationsRun(engine.getLastGeneration());
+
+        metrics.printReport("CPU Job Scheduling");
     }
 
     public static GeneticAlgorithmEngine configureInteractively(FitnessFunction fitnessFunction, List<Job> jobs) {

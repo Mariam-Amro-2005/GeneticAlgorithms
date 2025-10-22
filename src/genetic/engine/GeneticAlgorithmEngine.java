@@ -23,6 +23,7 @@ public class GeneticAlgorithmEngine {
 
     private final Random random;
     private Population population;
+    private int lastGeneration = 0;
 
     /** Private constructor — only accessible via the Builder */
     private GeneticAlgorithmEngine(Builder builder) {
@@ -116,7 +117,7 @@ public class GeneticAlgorithmEngine {
                 .average()
                 .orElse(0.0);
 
-        System.out.printf("Generation %d | Best: %.5f | Avg: %.5f%n", generation, best.getFitness(), avg);
+        System.out.printf("Generation %04d | Best: %.5f | Avg: %.5f%n", generation, best.getFitness(), avg);
 //        System.out.printf("Generation %d | Best Fitness: %.4f%n", generation, best.getFitness());
     }
 
@@ -130,7 +131,7 @@ public class GeneticAlgorithmEngine {
 
         for (int generation = 1; generation <= params.getGenerations(); generation++) {
             evolveGeneration(generation);
-
+            lastGeneration = generation;
             Chromosome best = getBestSolution();
             if (best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
                 System.out.printf(
@@ -155,6 +156,7 @@ public class GeneticAlgorithmEngine {
             thresholdReached = false;
             for (int generation = 1; generation <= params.getGenerations(); generation++) {
                 evolveGeneration(generation);
+                lastGeneration = generation;
                 Chromosome best = getBestSolution();
                 if (best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
                     System.out.printf(
@@ -174,7 +176,7 @@ public class GeneticAlgorithmEngine {
             System.out.println("⚠️ Fitness threshold not reached within the allotted generations.");
         }
 
-        System.out.printf("Attempts: %d%n", attempts);
+        System.out.printf("\n🔁 Retries (for validity): %d%n", attempts);
 
         if (fitnessFunction.isValid(finalBest)) {
             System.out.println("✅ Valid solution found!");
@@ -187,13 +189,14 @@ public class GeneticAlgorithmEngine {
         return finalBest;
     }
 
-
-
     /** Returns the best chromosome in the final population. */
     public Chromosome getBestSolution() {
         return (population == null) ? null : population.getBest();
     }
 
+    public int getLastGeneration() {
+        return lastGeneration;
+    }
     // ---------------------------------------------------------
     // ✅ BUILDER CLASS
     // ---------------------------------------------------------
