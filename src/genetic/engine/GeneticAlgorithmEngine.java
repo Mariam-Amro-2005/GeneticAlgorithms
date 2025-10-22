@@ -116,25 +116,78 @@ public class GeneticAlgorithmEngine {
                 .average()
                 .orElse(0.0);
 
-        System.out.printf("Generation %d | Best: %.4f | Avg: %.4f%n", generation, best.getFitness(), avg);
+        System.out.printf("Generation %d | Best: %.8f | Avg: %.8f%n", generation, best.getFitness(), avg);
 //        System.out.printf("Generation %d | Best Fitness: %.4f%n", generation, best.getFitness());
     }
 
-    /** Runs the GA evolution loop. */
+    /** Runs the GA evolution loop with validation. */
     public Chromosome run() {
-        // initialize population (may use provided population / initializer)
         params.validate();
         initializePopulation();
 
+        boolean thresholdReached = false;
+        final double EPSILON = 1e-6;
+
         for (int generation = 1; generation <= params.getGenerations(); generation++) {
             evolveGeneration(generation);
+
+            Chromosome best = getBestSolution();
+            if (best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
+                System.out.printf(
+                        "🎯 Fitness threshold %.5f reached at generation %d (fitness = %.5f)%n",
+                        params.getFitnessThreshold(), generation, best.getFitness()
+                );
+                thresholdReached = true;
+                break;
+            }
         }
 
-        Chromosome finalBest = population.getBest();
+        if (!thresholdReached) {
+            System.out.println("⚠️ Fitness threshold not reached within the allotted generations.");
+        }
+
+        Chromosome finalBest = getBestSolution();
+
+        // --- Validation retry loop ---
+        int attempts = 0;
+        final int maxRetries = params.getMaxRetries();
+
+        while (!fitnessFunction.isValid(finalBest) && attempts < maxRetries) {
+            System.out.println("❌ Invalid solution found — restarting evolution...");
+            initializePopulation();
+
+            thresholdReached = false;
+            for (int generation = 1; generation <= params.getGenerations(); generation++) {
+                evolveGeneration(generation);
+                Chromosome best = getBestSolution();
+                if (best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
+                    System.out.printf(
+                            "🎯 Fitness threshold %.5f reached during retry %d at generation %d (fitness = %.5f)%n",
+                            params.getFitnessThreshold(), attempts + 1, generation, best.getFitness()
+                    );
+                    thresholdReached = true;
+                    break;
+                }
+            }
+
+            finalBest = getBestSolution();
+            attempts++;
+        }
+
+        System.out.printf("Attempts: %d%n", attempts);
+
+        if (fitnessFunction.isValid(finalBest)) {
+            System.out.println("✅ Valid solution found!");
+        } else {
+            System.out.println("⚠️ Could not find a valid solution after retries.");
+        }
+
         System.out.println("\n=== Evolution Complete ===");
         System.out.println("Best Solution: " + finalBest);
         return finalBest;
     }
+
+
 
     /** Returns the best chromosome in the final population. */
     public Chromosome getBestSolution() {

@@ -10,6 +10,10 @@ import java.util.Set;
 
 public class CPUJobScheduling implements FitnessFunction {
 
+    private static final double DUPLICATE_PENALTY = 0.5;    // reduce fitness by 50%
+    private static final double ARRIVAL_PENALTY = 0.3;      // reduce fitness by 70%
+    private static final double INVALID_SCHEDULE_PENALTY = 0.1; // near-zero if both errors occur
+
     @Override
     public Double evaluate(Chromosome chromosome) {
         List<Gene<?>> genes = chromosome.getGenes();
@@ -17,11 +21,22 @@ public class CPUJobScheduling implements FitnessFunction {
         double totalWaiting = 0.0;
         double totalTurnaround = 0.0;
 
+        Set<Job> seen = new HashSet<>();
+        boolean hasDuplicate = false;
+        boolean hasEarlyStart = false;
+
         for (Gene<?> gene : genes) {
             Job job = ((JobGene) gene).getValue();
 
-            // If CPU is idle until job arrives, advance time
+            // Duplicate job check
+            if (!seen.add(job)) {
+                hasDuplicate = true;
+            }
+
+            // CPU idle time handling
             if (currentTime < job.getArrivalTime()) {
+                // Instead of jumping, count idle as penalty time
+                hasEarlyStart = true;
                 currentTime = job.getArrivalTime();
             }
 
@@ -37,35 +52,43 @@ public class CPUJobScheduling implements FitnessFunction {
         double avgWaiting = totalWaiting / n;
         double avgTurnaround = totalTurnaround / n;
 
-        // We want smaller waiting and turnaround times → higher fitness
-        // Using inverse to make fitness directly proportional to performance
+        // Base fitness (higher is better)
         double fitness = 1.0 / (1.0 + (1.5 * avgWaiting) + avgTurnaround);
 
-        // Optionally normalize to prevent near-zero values
+        // Apply penalties
+        if (hasDuplicate && hasEarlyStart) {
+            fitness *= INVALID_SCHEDULE_PENALTY; // both errors
+        } else if (hasDuplicate) {
+            fitness *= DUPLICATE_PENALTY;
+        } else if (hasEarlyStart) {
+            fitness *= ARRIVAL_PENALTY;
+        }
+
+        // Prevent total collapse of scale
         return Math.max(0.0001, fitness);
     }
-    public boolean isValidSchedule(Chromosome chrom) {
+
+    @Override
+    public boolean isValid(Chromosome chromosome) {
         Set<Job> seen = new HashSet<>();
         double currentTime = 0.0;
 
-        for (Gene<?> gene : chrom.getGenes()) {
+        for (var gene : chromosome.getGenes()) {
             Job job = ((JobGene) gene).getValue();
 
-            // 1️⃣ Check for duplicate jobs
+            // Duplicate check
             if (!seen.add(job)) {
-                return false; // duplicate
+                return false;
             }
 
-            // 2️⃣ Check if job starts before its arrival time
+            // Early start check
             if (currentTime < job.getArrivalTime()) {
-                return false; // invalid start time
+                return false;
             }
 
-            // advance CPU time
             currentTime += job.getBurstTime();
         }
 
-        return true; // passed all checks
+        return true;
     }
-
 }

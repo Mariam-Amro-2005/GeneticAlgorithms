@@ -12,8 +12,12 @@ public class GAParameters {
     private final int populationSize;
     private final int generations;
     private final int chromosomeLength;
+    private final int maxRetries;
+    private final double fitnessThreshold;
     private final double crossoverRate;
+    private int crossoverPoints;
     private final double mutationRate;
+    private double mutationRange;
     private final RepresentationType representationType;
     private final Random random;
 
@@ -26,8 +30,12 @@ public class GAParameters {
         this.populationSize = builder.populationSize;
         this.generations = builder.generations;
         this.chromosomeLength = builder.chromosomeLength;
+        this.maxRetries = builder.maxRetries;
+        this.fitnessThreshold = builder.fitnessThreshold;
         this.crossoverRate = builder.crossoverRate;
+        this.crossoverPoints = builder.crossoverPoints;
         this.mutationRate = builder.mutationRate;
+        this.mutationRange = builder.mutationRange;
         this.representationType = builder.representationType;
         this.random = builder.random;
         this.initialPopulation = builder.initialPopulation;
@@ -38,8 +46,12 @@ public class GAParameters {
     public int getPopulationSize() { return populationSize; }
     public int getGenerations() { return generations; }
     public int getChromosomeLength() { return chromosomeLength; }
+    public int getMaxRetries() { return maxRetries; }
+    public double getFitnessThreshold() { return fitnessThreshold; }
     public double getCrossoverRate() { return crossoverRate; }
+    public int getCrossoverPoints() { return crossoverPoints; }
     public double getMutationRate() { return mutationRate; }
+    public double getMutationRange() { return mutationRange; }
     public RepresentationType getRepresentationType() { return representationType; }
     public Random getRandom() { return random; }
     public List<Chromosome> getInitialPopulation() { return initialPopulation; }
@@ -60,8 +72,12 @@ public class GAParameters {
         private int populationSize = 20;
         private int generations = 100;
         private int chromosomeLength = 10;
+        private int maxRetries = 5;
+        private double fitnessThreshold = 0.01;
         private double crossoverRate = 0.8;
+        private int crossoverPoints = 2;
         private double mutationRate = 0.05;
+        private double mutationRange = 0.1;
         private RepresentationType representationType = RepresentationType.INTEGER;
         private Random random = new Random();
         private List<Chromosome> initialPopulation;
@@ -82,13 +98,33 @@ public class GAParameters {
             return this;
         }
 
+        public Builder setMaxRetries(int maxRetries) {
+            this.maxRetries = maxRetries;
+            return this;
+        }
+
+        public Builder setFitnessThreshold(double fitnessThreshold) {
+            this.fitnessThreshold = fitnessThreshold;
+            return this;
+        }
+
         public Builder setCrossoverRate(double crossoverRate) {
             this.crossoverRate = crossoverRate;
             return this;
         }
 
+        public Builder setCrossoverPoints(int crossoverPoints) {
+            this.crossoverPoints = crossoverPoints;
+            return this;
+        }
+
         public Builder setMutationRate(double mutationRate) {
             this.mutationRate = mutationRate;
+            return this;
+        }
+
+        public Builder setMutationRange(double mutationRange) {
+            this.mutationRange = mutationRange;
             return this;
         }
 

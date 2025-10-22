@@ -1,8 +1,6 @@
 package genetic.client;
 
-import genetic.case_studies.cpu.CPUJobScheduling;
-import genetic.case_studies.cpu.Job;
-import genetic.case_studies.cpu.JobGene;
+import genetic.case_studies.cpu.*;
 import genetic.core.Chromosome;
 import genetic.core.Gene;
 import genetic.engine.*;
@@ -42,40 +40,21 @@ public class Main {
         // Step 1: Configure parameters (chromosome length must equal number of jobs)
         GAParameters params = new GAParameters.Builder()
                 .setPopulationSize(50)
-                .setGenerations(200)
-                .setChromosomeLength(jobs.size())    // <- important
+                .setGenerations(10)
+                .setChromosomeLength(jobs.size())
+                .setFitnessThreshold(0.0236)
                 .setCrossoverRate(0.9)
                 .setMutationRate(0.25)
-                .setRepresentationType("JOB")        // must match RepresentationType enum
-                .setRandomSeed(seed)                 // same seed used to create initial pop
+                .setRepresentationType("JOB")
+                .setRandomSeed(seed)
                 .setInitialPopulation(initialPopulation)
                 .build();
 
-        // Step 2: Define fitness function (case study) -- pass jobs if your implementation requires it
-        // If your CPUJobScheduling constructor expects the job list, pass 'jobs'; otherwise adjust.
         FitnessFunction fitnessFunction = new CPUJobScheduling();
 
         // Build and run GA with defaults
         GeneticAlgorithmEngine ga = new GeneticAlgorithmEngine.Builder(params, fitnessFunction).build();
-        ga.run();
-
         Chromosome best = ga.run();
-        CPUJobScheduling scheduler = (CPUJobScheduling) fitnessFunction;
-
-        int attempts = 0;
-        while (!scheduler.isValidSchedule(best) && attempts < 5) {
-            System.out.println("❌ Invalid schedule found — restarting evolution...");
-            best = ga.run();
-            attempts++;
-        }
-
-        if (scheduler.isValidSchedule(best)) {
-            System.out.println("✅ Valid schedule found!");
-        } else {
-            System.out.println("⚠️ Could not find a valid schedule after retries.");
-        }
-
-        System.out.println("Final Solution: " + best);
 
     }
 

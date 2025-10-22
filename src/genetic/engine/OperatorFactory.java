@@ -17,10 +17,11 @@ public class OperatorFactory {
 
     public static CrossoverStrategy createCrossover(String name, GAParameters params) {
         double rate = params.getCrossoverRate();
+        int numPoints = params.getCrossoverPoints();
 
         return switch (name.toLowerCase()) {
             case "order" -> new OrderCrossover();
-            case "npoint" -> new NPointCrossover(2, rate); // 2-point crossover example
+            case "npoint" -> new NPointCrossover(numPoints, rate); // 2-point crossover example
             case "uniform" -> new UniformCrossover(rate);
             default -> throw new IllegalArgumentException("Unknown crossover method: " + name);
         };
@@ -28,11 +29,12 @@ public class OperatorFactory {
 
     public static MutationStrategy createMutation(String name, GAParameters params) {
         double rate = params.getMutationRate();
+        double range = params.getMutationRange();
 
         return switch (name.toLowerCase()) {
             case "swap" -> new SwapMutation(rate);
             case "bitflip" -> new BitFlipMutation(rate);
-            case "floating" -> new FloatingPointMutation(rate, 0.1);
+            case "floating" -> new FloatingPointMutation(rate, range);
             default -> throw new IllegalArgumentException("Unknown mutation method: " + name);
         };
     }
