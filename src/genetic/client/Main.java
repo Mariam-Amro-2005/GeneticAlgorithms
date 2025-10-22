@@ -6,11 +6,13 @@ import genetic.case_studies.cpu.JobGene;
 import genetic.core.Chromosome;
 import genetic.core.Gene;
 import genetic.engine.*;
+import genetic.operators.crossover.CrossoverStrategy;
+import genetic.operators.crossover.NPointCrossover;
+import genetic.operators.mutation.MutationStrategy;
+import genetic.operators.selection.SelectionStrategy;
+import genetic.replacement.ReplacementStrategy;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -55,9 +57,16 @@ public class Main {
         // If your CPUJobScheduling constructor expects the job list, pass 'jobs'; otherwise adjust.
         FitnessFunction fitnessFunction = new CPUJobScheduling();
 
+
+
+        // input here
+
+
+
+
+
         // Build and run GA with defaults
-        GeneticAlgorithmEngine ga = new GeneticAlgorithmEngine.Builder(params, fitnessFunction).build();
-        ga.run();
+        GeneticAlgorithmEngine ga = buildEngineFromUserInput(params, fitnessFunction);
 
         Chromosome best = ga.run();
         CPUJobScheduling scheduler = (CPUJobScheduling) fitnessFunction;
@@ -92,6 +101,91 @@ public class Main {
         }
         return pop;
     }
+
+
+
+    private static GeneticAlgorithmEngine buildEngineFromUserInput(GAParameters params, FitnessFunction fitnessFunction) {
+        Scanner sc = new Scanner(System.in);
+
+        // ==== User Selections ====
+        System.out.println("\nChoose Selection Method:");
+        System.out.println("1 - Tournament (default)");
+        System.out.println("2 - Roulette");
+        System.out.print("> ");
+        int selChoice = sc.nextInt();
+
+        System.out.println("\nChoose Crossover Method:");
+        System.out.println("1 - Order (default)");
+        System.out.println("2 - N-Point");
+        System.out.println("3 - Uniform");
+        System.out.print("> ");
+        int crossChoice = sc.nextInt();
+
+        // Only ask for number of points if user picked N-Point
+        int nPoints = 0;
+        if (crossChoice == 2) {
+            System.out.print("Enter number of crossover points: ");
+            nPoints = sc.nextInt();
+        }
+
+        System.out.println("\nChoose Mutation Method:");
+        System.out.println("1 - Swap (default)");
+        System.out.println("2 - BitFlip");
+        System.out.println("3 - FloatingPoint");
+        System.out.print("> ");
+        int mutChoice = sc.nextInt();
+
+        System.out.println("\nChoose Replacement Method:");
+        System.out.println("1 - SteadyState (default)");
+        System.out.println("2 - Elitism");
+        System.out.println("3 - Generational");
+        System.out.print("> ");
+        int repChoice = sc.nextInt();
+
+        // ==== Create Strategies via Factory ====
+        SelectionStrategy selection = switch (selChoice) {
+            case 1 -> OperatorFactory.createSelection("tournament");
+            case 2 -> OperatorFactory.createSelection("roulette");
+            default -> null;
+        };
+
+        CrossoverStrategy crossover = switch (crossChoice) {
+            case 1 -> OperatorFactory.createCrossover("order", params);
+            case 2 -> new NPointCrossover(nPoints, params.getCrossoverRate());
+            case 3 -> OperatorFactory.createCrossover("uniform", params);
+            default -> null;
+        };
+
+        MutationStrategy mutation = switch (mutChoice) {
+            case 1 -> OperatorFactory.createMutation("swap", params);
+            case 2 -> OperatorFactory.createMutation("bitflip", params);
+            case 3 -> OperatorFactory.createMutation("floating", params);
+            default -> null;
+        };
+
+        ReplacementStrategy replacement = switch (repChoice) {
+            case 1 -> OperatorFactory.createReplacement("steady");
+            case 2 -> OperatorFactory.createReplacement("elitism");
+            case 3 -> OperatorFactory.createReplacement("generational");
+            default -> null;
+        };
+
+        // === Combine everything ===
+        GeneticAlgorithmEngine.Builder ga = new GeneticAlgorithmEngine.Builder(
+                params,
+                fitnessFunction
+        )
+                .withCrossover(crossover)
+                .withMutation(mutation)
+                .withSelection(selection)
+                .withReplacement(replacement);
+
+
+        System.out.println("\nRunning GA with your chosen configuration...");
+
+        return ga.build();
+    }
+
 }
 
 
