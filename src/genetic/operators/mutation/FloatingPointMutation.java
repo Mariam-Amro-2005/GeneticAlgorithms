@@ -3,9 +3,14 @@ package genetic.operators.mutation;
 import genetic.core.*;
 import java.util.*;
 
+/**
+ * Floating Point Mutation:
+ * Randomly perturbs floating-point genes within a configurable mutation range.
+ * The mutation can be absolute or relative to the gene’s current value.
+ */
 public class FloatingPointMutation implements MutationStrategy {
     private final double mutationRate;
-    private final double mutationRange; // e.g., 0.1 = ±10% change
+    private final double mutationRange; // e.g., 0.1 = ±10% of current value if relative
 
     public FloatingPointMutation(double mutationRate, double mutationRange) {
         this.mutationRate = mutationRate;
@@ -21,8 +26,13 @@ public class FloatingPointMutation implements MutationStrategy {
             if (random.nextDouble() < mutationRate) {
                 FloatingPointGene g = (FloatingPointGene) gene;
                 double current = g.getValue();
-                double delta = (random.nextDouble() * 2 - 1) * mutationRange;
-                g.setValue(Math.max(0.0, Math.min(1.0, current + delta))); // keep in [0,1]
+
+                // Apply relative perturbation
+                double delta = (random.nextDouble() * 2 - 1) * mutationRange * Math.abs(current);
+                double mutated = current + delta;
+
+                // No artificial clamping — let user-defined fitness function handle constraints
+                g.setValue(mutated);
             }
         }
     }

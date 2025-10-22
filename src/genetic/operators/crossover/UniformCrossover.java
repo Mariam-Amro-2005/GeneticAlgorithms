@@ -11,18 +11,18 @@ public class UniformCrossover implements CrossoverStrategy {
     }
 
     @Override
-    public Chromosome[] crossover(Chromosome p1, Chromosome p2, Random random) {
-        Chromosome c1 = p1.copy();
-        Chromosome c2 = p2.copy();
+    public Chromosome[] crossover(Chromosome parent1, Chromosome parent2, Random random) {
+        Chromosome child1 = parent1.copy();
+        Chromosome child2 = parent2.copy();
 
-        for (int i = 0; i < p1.length(); i++) {
+        for (int i = 0; i < parent1.length(); i++) {
             if (random.nextDouble() < crossoverRate) {
-                Gene<?> temp = c1.getGenes().get(i).copy();
-                c1.getGenes().set(i, c2.getGenes().get(i).copy());
-                c2.getGenes().set(i, temp);
+                Gene<?> temp = child1.getGenes().get(i).copy();
+                child1.getGenes().set(i, child2.getGenes().get(i).copy());
+                child2.getGenes().set(i, temp);
             }
         }
 
-        return new Chromosome[]{c1, c2};
+        return new Chromosome[]{child1, child2};
     }
 }

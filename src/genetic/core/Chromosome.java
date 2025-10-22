@@ -1,5 +1,8 @@
 package genetic.core;
 
+import genetic.case_studies.cpu.Job;
+import genetic.case_studies.cpu.JobGene;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +35,8 @@ public class Chromosome implements Comparable<Chromosome> {
                 case BINARY -> new BinaryGene(random);
                 case INTEGER -> new IntegerGene(random);
                 case FLOATING_POINT -> new FloatingPointGene(random);
+                case JOB ->  throw new IllegalStateException(
+                        "JOB type cannot be randomly initialized. Provide an initial population or a populationInitializer in GAParameters.");
             });
         }
     }
