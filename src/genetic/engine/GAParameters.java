@@ -13,7 +13,7 @@ public class GAParameters {
     private final int generations;
     private final int chromosomeLength;
     private final int maxRetries;
-    private final double fitnessThreshold;
+    private final Double fitnessThreshold;
     private final double crossoverRate;
     private final int crossoverPoints;
     private final double mutationRate;
@@ -47,7 +47,7 @@ public class GAParameters {
     public int getGenerations() { return generations; }
     public int getChromosomeLength() { return chromosomeLength; }
     public int getMaxRetries() { return maxRetries; }
-    public double getFitnessThreshold() { return fitnessThreshold; }
+    public Double getFitnessThreshold() { return fitnessThreshold; }
     public double getCrossoverRate() { return crossoverRate; }
     public int getCrossoverPoints() { return crossoverPoints; }
     public double getMutationRate() { return mutationRate; }
@@ -73,7 +73,7 @@ public class GAParameters {
         private int generations = 100;
         private int chromosomeLength = 10;
         private int maxRetries = 5;
-        private double fitnessThreshold = 1;
+        private Double fitnessThreshold = null;
         private double crossoverRate = 0.8;
         private int crossoverPoints = 2;
         private double mutationRate = 0.05;

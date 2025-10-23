@@ -126,6 +126,7 @@ public class GeneticAlgorithmEngine {
         params.validate();
         initializePopulation();
 
+        boolean hasThreshold = params.getFitnessThreshold() != null;
         boolean thresholdReached = false;
         final double EPSILON = 1e-6;
 
@@ -133,7 +134,7 @@ public class GeneticAlgorithmEngine {
             evolveGeneration(generation);
             lastGeneration = generation;
             Chromosome best = getBestSolution();
-            if (best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
+            if (hasThreshold && best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
                 System.out.printf(
                         "🎯 Fitness threshold %.5f reached at generation %d (fitness = %.5f)%n",
                         params.getFitnessThreshold(), generation, best.getFitness()
@@ -158,7 +159,7 @@ public class GeneticAlgorithmEngine {
                 evolveGeneration(generation);
                 lastGeneration = generation;
                 Chromosome best = getBestSolution();
-                if (best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
+                if (hasThreshold && best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
                     System.out.printf(
                             "🎯 Fitness threshold %.5f reached during retry %d at generation %d (fitness = %.5f)%n",
                             params.getFitnessThreshold(), attempts + 1, generation, best.getFitness()
@@ -172,7 +173,7 @@ public class GeneticAlgorithmEngine {
             attempts++;
         }
 
-        if (!thresholdReached && params.getFitnessThreshold() != 1.0) {
+        if (hasThreshold && !thresholdReached) {
             System.out.println("⚠️ Fitness threshold not reached within the allotted generations.");
         }
 
