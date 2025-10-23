@@ -1,10 +1,14 @@
 package genetic.util;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.FileWriter;
@@ -59,6 +63,11 @@ public class PerformanceMetrics {
         return Math.max(0, endMemory - startMemory);
     }
 
+    public void resetHistory() {
+        bestFitnessHistory.clear();
+        avgFitnessHistory.clear();
+    }
+
     // ✅ Print runtime summary
     public void printReport(String caseName) {
         System.out.println("\n=== PERFORMANCE REPORT: " + caseName + " ===");
@@ -101,14 +110,22 @@ public class PerformanceMetrics {
         public void start(Stage stage) {
             stage.setTitle("Genetic Algorithm Fitness Evolution");
 
+            // === Axes ===
             NumberAxis xAxis = new NumberAxis();
             xAxis.setLabel("Generation");
+
             NumberAxis yAxis = new NumberAxis();
             yAxis.setLabel("Fitness");
 
+            // === Line Chart ===
             LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
             lineChart.setTitle("Fitness Over Generations");
+            lineChart.setAnimated(false);
+            lineChart.setCreateSymbols(false); // cleaner lines
+            lineChart.setLegendVisible(true);
+            lineChart.setLegendSide(Side.BOTTOM);
 
+            // === Data Series ===
             XYChart.Series<Number, Number> bestSeriesChart = new XYChart.Series<>();
             bestSeriesChart.setName("Best Fitness");
 
@@ -121,8 +138,20 @@ public class PerformanceMetrics {
             }
 
             lineChart.getData().addAll(bestSeriesChart, avgSeriesChart);
-            stage.setScene(new Scene(lineChart, 800, 600));
+
+            // === Layout container ===
+            VBox root = new VBox();
+            root.getChildren().add(lineChart);
+            root.setSpacing(5);
+            root.setPadding(new Insets(5, 5, 10, 5));
+            root.setAlignment(Pos.CENTER);
+
+            // === Scene ===
+            Scene scene = new Scene(root, 1000, 600);
+            stage.setScene(scene);
             stage.show();
         }
+
+
     }
 }

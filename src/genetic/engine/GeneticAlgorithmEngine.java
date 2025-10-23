@@ -233,6 +233,9 @@ public class GeneticAlgorithmEngine {
             System.out.println("❌ Invalid solution found — restarting evolution...");
             initializePopulation();
 
+            if (metrics != null)
+                metrics.resetHistory();
+
             thresholdReached = false;
             for (int generation = 1; generation <= params.getGenerations(); generation++) {
                 evolveGeneration(generation);

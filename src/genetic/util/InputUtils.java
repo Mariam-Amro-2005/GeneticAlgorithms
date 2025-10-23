@@ -11,7 +11,7 @@ public final class InputUtils {
     /**
      * Reads a double value with a default if the user presses Enter.
      */
-    public static double readDoubleOrDefault(String prompt, double defaultValue) {
+    public static Double readDoubleOrDefault(String prompt, Double defaultValue) {
         System.out.printf("%s [default = %.3f]: ", prompt, defaultValue);
         String line = scanner.nextLine().trim();
         if (line.isEmpty()) return defaultValue;
@@ -27,7 +27,7 @@ public final class InputUtils {
     /**
      * Reads an int value with a default if the user presses Enter.
      */
-    public static int readIntOrDefault(String prompt, int defaultValue) {
+    public static Integer readIntOrDefault(String prompt, Integer defaultValue) {
         System.out.printf("%s [default = %d]: ", prompt, defaultValue);
         String line = scanner.nextLine().trim();
         if (line.isEmpty()) return defaultValue;

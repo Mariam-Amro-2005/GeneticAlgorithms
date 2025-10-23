@@ -28,7 +28,7 @@ public class CLIApp {
 
         PerformanceMetrics metrics = new PerformanceMetrics();
         metrics.start();
-        Chromosome best = engine.run();
+        Chromosome best = engine.run(metrics);
         metrics.stop();
 
         metrics.setFinalFitness(best.getFitness());
@@ -43,11 +43,11 @@ public class CLIApp {
         final long seed = 42L;
         Random rng = new Random(seed);
 
-        int populationSize = InputUtils.readIntOrDefault("Population size", 50);
-        int generations = InputUtils.readIntOrDefault("Number of generations", 200);
-        double crossoverRate = InputUtils.readDoubleOrDefault("Crossover rate (0.0–1.0)", 0.9);
-        double mutationRate = InputUtils.readDoubleOrDefault("Mutation rate (0.0–1.0)", 0.25);
-        double fitnessThreshold = InputUtils.readDoubleOrDefault("Fitness threshold for early stop", 0.02);
+        Integer populationSize = InputUtils.readIntOrDefault("Population size", 50);
+        Integer generations = InputUtils.readIntOrDefault("Number of generations", 200);
+        Double crossoverRate = InputUtils.readDoubleOrDefault("Crossover rate (0.0–1.0)", 0.9);
+        Double mutationRate = InputUtils.readDoubleOrDefault("Mutation rate (0.0–1.0)", 0.25);
+        Double fitnessThreshold = InputUtils.readDoubleOrDefault("Fitness threshold for early stop", null);
 
         var initialPopulation = PopulationUtils.createJobInitialPopulation(jobs, populationSize, rng);
 
@@ -57,11 +57,13 @@ public class CLIApp {
                 .setChromosomeLength(jobs.size())
                 .setCrossoverRate(crossoverRate)
                 .setMutationRate(mutationRate)
-                .setFitnessThreshold(fitnessThreshold)
                 .setRepresentationType("JOB")
                 .setRandomSeed(seed)
                 .setInitialPopulation(initialPopulation);
 
+        if (fitnessThreshold != null) {
+            paramBuilder.setFitnessThreshold(fitnessThreshold);
+        }
         // === SELECTION ===
         System.out.println("\nSelect Selection Strategy:");
         System.out.println("1. Tournament (default)");
