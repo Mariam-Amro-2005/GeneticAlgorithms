@@ -33,8 +33,10 @@ public class CLIApp {
 
         metrics.setFinalFitness(best.getFitness());
         metrics.setGenerationsRun(engine.getLastGeneration());
+        metrics.exportToCSV("fitness_history.csv");
 
         metrics.printReport("CPU Job Scheduling");
+        metrics.visualize();
     }
 
     public static GeneticAlgorithmEngine configureInteractively(FitnessFunction fitnessFunction, List<Job> jobs) {

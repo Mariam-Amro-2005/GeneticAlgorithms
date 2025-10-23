@@ -28,6 +28,7 @@ public class Main {
                 .setPopulationSize(50)
                 .setGenerations(200)
                 .setChromosomeLength(jobs.size())
+                .setFitnessThreshold(0.0251)
                 .setCrossoverRate(0.9)
                 .setMutationRate(0.25)
                 .setRepresentationType("JOB")
@@ -41,13 +42,15 @@ public class Main {
         PerformanceMetrics metrics = new PerformanceMetrics();
         metrics.start();
 
-        Chromosome best = ga.run();
+        Chromosome best = ga.run(metrics);
 
         metrics.stop();
 
         metrics.setFinalFitness(best.getFitness());
         metrics.setGenerationsRun(ga.getLastGeneration());
+        metrics.exportToCSV("fitness_history.csv");
 
         metrics.printReport("CPU Job Scheduling");
+        metrics.visualize();
     }
 }

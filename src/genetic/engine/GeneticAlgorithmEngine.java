@@ -5,6 +5,7 @@ import genetic.operators.selection.*;
 import genetic.operators.crossover.*;
 import genetic.operators.mutation.*;
 import genetic.replacement.*;
+import genetic.util.PerformanceMetrics;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -159,6 +160,94 @@ public class GeneticAlgorithmEngine {
                 evolveGeneration(generation);
                 lastGeneration = generation;
                 Chromosome best = getBestSolution();
+                if (hasThreshold && best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
+                    System.out.printf(
+                            "🎯 Fitness threshold %.5f reached during retry %d at generation %d (fitness = %.5f)%n",
+                            params.getFitnessThreshold(), attempts + 1, generation, best.getFitness()
+                    );
+                    thresholdReached = true;
+                    break;
+                }
+            }
+
+            finalBest = getBestSolution();
+            attempts++;
+        }
+
+        if (hasThreshold && !thresholdReached) {
+            System.out.println("⚠️ Fitness threshold not reached within the allotted generations.");
+        }
+
+        System.out.printf("\n🔁 Retries (for validity): %d%n", attempts);
+
+        if (fitnessFunction.isValid(finalBest)) {
+            System.out.println("✅ Valid solution found!");
+        } else {
+            System.out.println("⚠️ Could not find a valid solution after retries.");
+        }
+
+        System.out.println("\n=== Evolution Complete ===");
+        System.out.println("Best Solution: " + finalBest);
+        return finalBest;
+    }
+
+    public Chromosome run(PerformanceMetrics metrics) {
+        params.validate();
+        initializePopulation();
+
+        boolean hasThreshold = params.getFitnessThreshold() != null;
+        boolean thresholdReached = false;
+        final double EPSILON = 1e-6;
+
+        for (int generation = 1; generation <= params.getGenerations(); generation++) {
+            evolveGeneration(generation);
+            lastGeneration = generation;
+            Chromosome best = getBestSolution();
+
+            double avg = population.getIndividuals().stream()
+                    .mapToDouble(Chromosome::getFitness)
+                    .average()
+                    .orElse(0.0);
+
+            // record into metrics
+            if (metrics != null)
+                metrics.recordFitness(best.getFitness(), avg);
+
+            if (hasThreshold && best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
+                System.out.printf(
+                        "🎯 Fitness threshold %.5f reached at generation %d (fitness = %.5f)%n",
+                        params.getFitnessThreshold(), generation, best.getFitness()
+                );
+                thresholdReached = true;
+                break;
+            }
+        }
+
+        Chromosome finalBest = getBestSolution();
+
+        // --- Validation retry loop ---
+        int attempts = 0;
+        final int maxRetries = params.getMaxRetries();
+
+        while (!fitnessFunction.isValid(finalBest) && attempts < maxRetries) {
+            System.out.println("❌ Invalid solution found — restarting evolution...");
+            initializePopulation();
+
+            thresholdReached = false;
+            for (int generation = 1; generation <= params.getGenerations(); generation++) {
+                evolveGeneration(generation);
+                lastGeneration = generation;
+                Chromosome best = getBestSolution();
+
+                double avg = population.getIndividuals().stream()
+                        .mapToDouble(Chromosome::getFitness)
+                        .average()
+                        .orElse(0.0);
+
+                // record into metrics
+                if (metrics != null)
+                    metrics.recordFitness(best.getFitness(), avg);
+
                 if (hasThreshold && best != null && best.getFitness() + EPSILON >= params.getFitnessThreshold()) {
                     System.out.printf(
                             "🎯 Fitness threshold %.5f reached during retry %d at generation %d (fitness = %.5f)%n",
