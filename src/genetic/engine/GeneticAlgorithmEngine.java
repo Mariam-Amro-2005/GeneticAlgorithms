@@ -93,13 +93,18 @@ public class GeneticAlgorithmEngine {
             Chromosome parent1 = selection.selectParent(population, random);
             Chromosome parent2 = selection.selectParent(population,  random);
 
-            Chromosome[] children = crossover.crossover(parent1, parent2, random);
+            Chromosome[] children = crossover.crossover(parent1, parent2, random);  // Add crossover children to offspring first
+
+            offspringList.add(children[0].copy());
+            if (offspringList.size() < params.getPopulationSize())
+                offspringList.add(children[1].copy());
+
             mutation.mutate(children[0], random);
             mutation.mutate(children[1], random);
 
-            offspringList.add(children[0]);
+            offspringList.add(children[0].copy());
             if (offspringList.size() < params.getPopulationSize())
-                offspringList.add(children[1]);
+                offspringList.add(children[1].copy());
         }
 
         // create offspring Population
