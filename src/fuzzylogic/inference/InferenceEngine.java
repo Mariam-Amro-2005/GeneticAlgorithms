@@ -1,0 +1,13 @@
+package fuzzylogic.inference;
+
+import fuzzylogic.rules.RuleBase;
+import fuzzylogic.variables.*;
+
+import java.util.Map;
+
+public interface InferenceEngine {
+    Map<FuzzySet, Double> infer(
+            Map<LinguisticVariable, Map<FuzzySet, Double>> fuzzifiedInputs,
+            RuleBase ruleBase
+    );
+}

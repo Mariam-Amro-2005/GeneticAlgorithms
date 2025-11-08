@@ -1,0 +1,8 @@
+package fuzzylogic.operators.snorms;
+
+public class MaxSNorm implements SNorm {
+    @Override
+    public double apply(double a, double b) {
+        return 0;
+    }
+}

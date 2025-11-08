@@ -1,0 +1,8 @@
+package fuzzylogic.operators.tnorms;
+
+public class ProductTNorm implements TNorm {
+    @Override
+    public double apply(double a, double b) {
+        return 0;
+    }
+}
